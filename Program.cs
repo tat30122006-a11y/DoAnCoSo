@@ -47,6 +47,6 @@ app.UseAuthorization();
 // Định tuyến mặc định cho các Controller của MVC
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Dashboard}/{action=Index}/{id?}");
 
 app.Run();
