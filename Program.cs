@@ -16,6 +16,14 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<QuanLyKhoContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// CHÈN THÊM VÀO ĐÂY: Đăng ký dịch vụ Session
+builder.Services.AddSession(options => {
+    options.IdleTimeout = TimeSpan.FromMinutes(30); // Session tự hủy sau 30 phút không thao tác
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+// ... Phần đăng ký AddScoped Scoped Services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IWarehouseService, WarehouseService>();
 builder.Services.AddScoped<IProductService, ProductService>();
@@ -41,6 +49,9 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+//Kích hoạt Middleware Session (Phải đặt TRƯỚC UseAuthorization)
+app.UseSession();
 
 app.UseAuthorization();
 
