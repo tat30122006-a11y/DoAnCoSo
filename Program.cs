@@ -1,6 +1,7 @@
-using Microsoft.EntityFrameworkCore;
 // Thay thế "DoAnCoSo" bằng Namespace chuẩn của dự án nếu bạn đặt tên khác
 using DoAnCoSo.Models;
+using DoAnCoSo.Services;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +15,15 @@ builder.Services.AddControllersWithViews();
 // 2. Đăng ký kết nối SQL Server thông qua Entity Framework Core
 builder.Services.AddDbContext<QuanLyKhoContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IWarehouseService, WarehouseService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ISupplierService, SupplierService>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<IInventoryService, InventoryService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IReportService, ReportService>();
 
 var app = builder.Build();
 
