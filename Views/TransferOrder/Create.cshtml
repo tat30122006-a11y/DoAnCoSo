@@ -1,0 +1,127 @@
+﻿@{
+    ViewData["Title"] = "Tạo Lệnh Điều Chuyển";
+}
+
+<div class="container-fluid mt-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white py-3">
+            <h5 class="card-title mb-0 fw-bold">
+                <i class="bi bi-arrow-left-right me-2"></i>Tạo Lệnh Điều Chuyển Nội Bộ
+            </h5>
+        </div>
+        <div class="card-body p-4">
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <form asp-action="Create" method="post" id="transferForm">
+                @Html.AntiForgeryToken()
+
+                <div class="row bg-light p-3 rounded mb-4 border mx-0">
+                    <h6 class="fw-bold text-secondary mb-3 text-uppercase small">1. Tuyến Đường Điều Chuyển</h6>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label small fw-bold text-danger">Từ Kho Xuất (Nơi lấy hàng đi) *</label>
+                        <select name="fromWarehouseId" class="form-select border-danger" required>
+                            <option value="">-- Chọn kho khởi hành --</option>
+                            @foreach (var w in ViewBag.Warehouses)
+                            {
+                                <option value="@w.Id">@w.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label small fw-bold text-success">Đến Kho Nhập (Nơi nhận hàng về) *</label>
+                        <select name="toWarehouseId" class="form-select border-success" required>
+                            <option value="">-- Chọn kho cập bến --</option>
+                            @foreach (var w in ViewBag.Warehouses)
+                            {
+                                <option value="@w.Id">@w.Name</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row bg-light p-3 rounded mb-4 border mx-0">
+                    <div class="d-flex justify-content-between align-items-center mb-3 px-0">
+                        <h6 class="fw-bold text-secondary mb-0 text-uppercase small">2. Danh sách sản phẩm cần chuyển</h6>
+                        <button type="button" class="btn btn-sm btn-primary fw-bold" onclick="addNewRow()">
+                            <i class="bi bi-plus-lg me-1"></i>Thêm Sản Phẩm
+                        </button>
+                    </div>
+
+                    <div class="table-responsive px-0">
+                        <table class="table table-bordered table-hover bg-white mb-0" id="detailsTable">
+                            <thead class="table-secondary small text-uppercase">
+                                <tr>
+                                    <th>Tên Sản Phẩm / Mã SKU *</th>
+                                    <th width="25%" class="text-center">Số Lượng Chuyển *</th>
+                                    <th width="10%" class="text-center">Xóa</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between border-top pt-3">
+                    <a asp-action="Index" class="btn btn-outline-secondary fw-bold">
+                        <i class="bi bi-arrow-left me-1"></i>Hủy Bỏ
+                    </a>
+                    <button type="submit" class="btn btn-primary fw-bold px-4 shadow-sm">
+                        <i class="bi bi-cursor-fill me-2"></i>Tạo Lệnh Điều Chuyển
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<select id="productHtmlTemplate" style="display:none;">
+    <option value="">-- Chọn Sản Phẩm --</option>
+    @foreach (var p in ViewBag.Products)
+    {
+        <option value="@p.Id">[@p.Sku] - @p.Name</option>
+    }
+</select>
+
+@section Scripts {
+    <script>
+        function addNewRow() {
+            var productOptions = document.getElementById("productHtmlTemplate").innerHTML;
+            var tbody = document.querySelector("#detailsTable tbody");
+            var rowId = Date.now();
+
+            var rowHtml = `<tr id="row_${rowId}">
+                <td>
+                    <select name="productIds" class="form-select" required>
+                        ${productOptions}
+                    </select>
+                </td>
+                <td>
+                    <input type="number" name="quantities" class="form-control text-center fw-bold text-primary" min="1" value="1" required />
+                </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRow('${rowId}')">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>`;
+            tbody.insertAdjacentHTML('beforeend', rowHtml);
+        }
+
+        function removeRow(rowId) {
+            var row = document.getElementById("row_" + rowId);
+            if (row) { row.remove(); }
+        }
+
+        window.onload = function() { addNewRow(); };
+    </script>
+}

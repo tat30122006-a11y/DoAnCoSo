@@ -1,0 +1,155 @@
+﻿@model DoAnCoSo.Models.TransferOrder
+@using DoAnCoSo.Helpers
+@{
+    ViewData["Title"] = "Xử Lý Lệnh Điều Chuyển";
+}
+
+<div class="container-fluid mt-4">
+
+    @if (TempData["AlertMessage"] != null)
+    {
+        <div class="alert alert-@TempData["AlertType"] alert-dismissible fade show shadow-sm mb-3">
+            <i class="bi bi-info-circle-fill me-2"></i>@TempData["AlertMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-dark text-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0 fw-bold">
+                <i class="bi bi-shuffle me-2"></i>Lệnh Điều Chuyển: <span class="text-info">@Model.TransferCode</span>
+            </h5>
+            @{
+                string badgeColor = Model.Status == SystemConstants.OrderStatus.Pending ? "bg-warning text-dark" :
+                                   (Model.Status == SystemConstants.OrderStatus.InTransit ? "bg-info text-dark" : "bg-success");
+            }
+            <span class="badge @badgeColor fs-6 px-3 rounded-pill text-uppercase fw-bold">@Model.Status</span>
+        </div>
+
+        <div class="card-body p-4">
+
+            <div class="position-relative mx-5 my-4 pb-4">
+                <div class="progress" style="height: 4px;">
+                    @{
+                        string prog = Model.Status == SystemConstants.OrderStatus.Pending ? "0%" :
+                                     (Model.Status == SystemConstants.OrderStatus.InTransit ? "50%" : "100%");
+                    }
+                    <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" style="width: @prog;"></div>
+                </div>
+                <div class="d-flex justify-content-between position-absolute w-100 top-0 translate-middle-y">
+                    <span class="badge rounded-pill bg-success p-2 px-3 border border-2 border-white shadow">
+                        <i class="bi bi-1-circle me-1"></i>Đã Tạo Lệnh
+                    </span>
+                    <span class="badge rounded-pill @(Model.Status != SystemConstants.OrderStatus.Pending ? "bg-success" : "bg-secondary text-light") p-2 px-3 border border-2 border-white shadow">
+                        <i class="bi bi-2-circle me-1"></i>Đang Vận Chuyển
+                    </span>
+                    <span class="badge rounded-pill @(Model.Status == SystemConstants.OrderStatus.Received ? "bg-success" : "bg-secondary text-light") p-2 px-3 border border-2 border-white shadow">
+                        <i class="bi bi-3-circle me-1"></i>Kho Đích Đã Nhận
+                    </span>
+                </div>
+            </div>
+
+            <div class="row mt-5 mb-4 bg-light p-3 rounded border mx-0 text-center">
+                <div class="col-md-5">
+                    <p class="text-danger fw-bold small mb-1"><i class="bi bi-box-arrow-up me-1"></i>KHO XUẤT HÀNG ĐI</p>
+                    <h5 class="fw-bold text-dark mb-0">@Model.FromWarehouse.Name</h5>
+                </div>
+                <div class="col-md-2 d-flex align-items-center justify-content-center">
+                    <i class="bi bi-arrow-right-circle-fill fs-2 text-primary"></i>
+                </div>
+                <div class="col-md-5">
+                    <p class="text-success fw-bold small mb-1"><i class="bi bi-box-arrow-down me-1"></i>KHO NHẬN HÀNG VỀ</p>
+                    <h5 class="fw-bold text-dark mb-0">@Model.ToWarehouse.Name</h5>
+                </div>
+            </div>
+
+            <h6 class="fw-bold text-dark mb-3 text-uppercase small"><i class="bi bi-box-seam me-2 text-secondary"></i>Danh mục sản phẩm luân chuyển</h6>
+
+            @if (Model.Status == SystemConstants.OrderStatus.Pending)
+            {
+                <table class="table table-bordered align-middle">
+                    <thead class="table-light small text-uppercase">
+                        <tr><th>Mã SKU</th><th>Sản Phẩm</th><th class="text-center">Số Lượng Yêu Cầu Chuyển</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in ViewBag.Details)
+                        {
+                            <tr><td class="fw-bold text-danger">@item.SKU</td><td class="fw-bold text-dark">@item.ProductName</td><td class="text-center fs-5 fw-bold text-primary">@item.RequestedQty</td></tr>
+                        }
+                    </tbody>
+                </table>
+                <div class="d-flex justify-content-between border-top pt-3 mt-4">
+                    <a asp-action="Index" class="btn btn-outline-secondary fw-bold">Quay Lại</a>
+                    <form asp-action="StartTransfer" method="post" onsubmit="return confirm('XÁC NHẬN KHO ĐI: Hàng hóa sẽ được xuất khỏi kho và lên xe vận chuyển. Chắc chắn chứ?');">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-primary fw-bold px-4 shadow-sm"><i class="bi bi-truck me-2"></i>XUẤT HÀNG LÊN XE (Trừ Tồn Kho Xuất)</button>
+                    </form>
+                </div>
+            }
+            else if (Model.Status == SystemConstants.OrderStatus.InTransit)
+            {
+                <form asp-action="ConfirmReceive" method="post">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-light small text-uppercase">
+                            <tr><th>Mã SKU</th><th>Sản Phẩm</th><th class="text-center">Slg Nơi Đi Gửi</th><th class="text-center" width="25%">KHO ĐÍCH KIỂM ĐẾM THỰC TẾ *</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in ViewBag.Details)
+                            {
+                                <tr>
+                                    <td class="fw-bold text-danger">@item.SKU</td>
+                                    <td class="fw-bold text-dark">@item.ProductName</td>
+                                    <td class="text-center fs-5 text-muted">@item.RequestedQty</td>
+                                    <td>
+                                        <input type="hidden" name="productIds" value="@item.ProductId" />
+                                        <input type="number" name="actualQties" class="form-control text-center border-success bg-light fw-bold fs-5" value="@item.RequestedQty" min="0" required />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    <div class="alert alert-info small mt-2"><i class="bi bi-info-circle me-1"></i>Nếu kho đích nhập số lượng thực tế THẤP HƠN số lượng gửi đi, hệ thống sẽ tự động đưa phần chênh lệch vào sổ "Hao hụt/Thất thoát".</div>
+                    <div class="d-flex justify-content-between border-top pt-3 mt-4">
+                        <a asp-action="Index" class="btn btn-outline-secondary fw-bold">Quay Lại</a>
+                        <button type="submit" class="btn btn-success fw-bold px-4 shadow-sm" onclick="return confirm('XÁC NHẬN KHO ĐẾN: Bạn chốt số lượng thực nhận như trên để hệ thống ghi nhận Tồn kho?');">
+                            <i class="bi bi-check-all me-2"></i>CHỐT KIỂM ĐẾM & CỘNG KHO ĐÍCH
+                        </button>
+                    </div>
+                </form>
+            }
+            else
+            {
+                <table class="table table-bordered align-middle">
+                    <thead class="table-light small text-uppercase">
+                        <tr><th>Mã SKU</th><th>Sản Phẩm</th><th class="text-center">Slg Nơi Đi Gửi</th><th class="text-center">Slg Thực Nhận</th><th class="text-center">Tình Trạng Hàng</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in ViewBag.Details)
+                        {
+                            <tr>
+                                <td class="fw-bold text-danger">@item.SKU</td>
+                                <td class="fw-bold text-dark">@item.ProductName</td>
+                                <td class="text-center">@item.RequestedQty</td>
+                                <td class="text-center fw-bold text-success fs-5">@item.ActualQty</td>
+                                <td class="text-center">
+                                    @if (item.LossQty > 0)
+                                    {
+                                        <span class="badge bg-danger shadow-sm py-2 px-3"><i class="bi bi-exclamation-triangle me-1"></i>Hụt @item.LossQty</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary shadow-sm py-2 px-3"><i class="bi bi-check-circle me-1"></i>Khớp đủ</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <div class="text-end border-top pt-3 mt-4">
+                    <a asp-action="Index" class="btn btn-outline-secondary fw-bold px-4">Đóng Lại</a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
