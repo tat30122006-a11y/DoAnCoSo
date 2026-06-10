@@ -1,0 +1,43 @@
+﻿@model DoAnCoSo.Models.ViewModels.SupplierVM
+@{
+    ViewData["Title"] = "Cập Nhật Nhà Cung Cấp";
+}
+
+<div class="container mt-4" style="max-width: 600px;">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white py-3">
+            <h5 class="card-title mb-0 fw-bold"><i class="bi bi-pencil-square me-2"></i>Cập Nhật Nhà Cung Cấp</h5>
+        </div>
+        <div class="card-body p-4">
+            <form asp-action="Edit" method="post">
+                <input type="hidden" asp-for="Id" />
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label small fw-bold">Tên đối tác *</label>
+                    <input asp-for="Name" class="form-control" required />
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Phone" class="form-label small fw-bold">Số điện thoại</label>
+                        <input asp-for="Phone" class="form-control" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="Email" class="form-label small fw-bold">Email</label>
+                        <input asp-for="Email" type="email" class="form-control" />
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Address" class="form-label small fw-bold">Địa chỉ</label>
+                    <input asp-for="Address" class="form-control" />
+                </div>
+                <div class="mb-4 form-check form-switch">
+                    <input asp-for="IsActive" class="form-check-input" type="checkbox" id="isActiveSwitch">
+                    <label class="form-check-label small fw-bold text-secondary" for="isActiveSwitch">Đang giao dịch</label>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Quay lại</a>
+                    <button type="submit" class="btn btn-primary fw-bold">Cập Nhật</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
