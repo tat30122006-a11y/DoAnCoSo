@@ -31,5 +31,33 @@ namespace DoAnCoSo.Services
                 StockStatusText = x.StockStatusText ?? "Chưa xác định" // [Đã sửa] Xử lý triệt để cảnh báo Null
             }).ToList();
         }
+        public async Task<List<InventoryVM>> GetFullInventoryAsync(int? warehouseId)
+        {
+            var query = _context.Inventories
+                .Include(i => i.Warehouse)
+                .Include(i => i.Product)
+                .AsQueryable();
+
+            if (warehouseId.HasValue)
+            {
+                query = query.Where(i => i.WarehouseId == warehouseId.Value);
+            }
+
+            return await query
+                .OrderBy(i => i.Warehouse.Name)
+                .ThenBy(i => i.Product.Name)
+                .Select(i => new InventoryVM
+                {
+                    WarehouseId = i.WarehouseId,
+                    WarehouseName = i.Warehouse.Name,
+                    ProductId = i.ProductId,
+                    SKU = i.Product.Sku,
+                    ProductName = i.Product.Name,
+                    Quantity = i.Quantity,
+                    MinQuantity = i.MinQuantity,
+                    MaxQuantity = i.MaxQuantity,
+                    UpdatedAt = i.UpdatedAt
+                }).ToListAsync();
+        }
     }
 }

@@ -36,5 +36,38 @@ namespace DoAnCoSo.Services
                 Role = user.Role
             };
         }
+        public async Task<List<UserVM>> GetAllUsersAsync()
+        {
+            return await _context.Users
+                .OrderBy(u => u.Id)
+                .Select(u => new UserVM
+                {
+                    Id = u.Id,
+                    Username = u.Username,
+                    FullName = u.FullName,
+                    Email = u.Email,
+                    Role = u.Role,
+                    IsActive = u.IsActive
+                }).ToListAsync();
+        }
+
+        public async Task<(bool IsSuccess, string Message)> CreateUserAsync(User model, string rawPassword)
+        {
+            var isExist = await _context.Users.AnyAsync(u => u.Username == model.Username || u.Email == model.Email);
+            if (isExist) return (false, "Tên đăng nhập hoặc Email này đã tồn tại trong hệ thống!");
+
+            try
+            {
+                model.PasswordHash = SecurityHelper.ComputeSha256Hash(rawPassword);
+                model.IsActive = true;
+                _context.Users.Add(model);
+                await _context.SaveChangesAsync();
+                return (true, "Cấp tài khoản nhân viên mới thành công!");
+            }
+            catch (Exception ex)
+            {
+                return (false, "Lỗi lưu database: " + ex.Message);
+            }
+        }
     }
 }

@@ -7,5 +7,6 @@ namespace DoAnCoSo.Services
     public interface IInventoryService
     {
         Task<List<StockAlertVM>> GetDashboardAlertsAsync();
+        Task<List<InventoryVM>> GetFullInventoryAsync(int? warehouseId);
     }
 }
