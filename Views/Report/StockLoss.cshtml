@@ -1,0 +1,53 @@
+﻿@model IEnumerable<DoAnCoSo.Models.ViewModels.StockLossVM>
+@{
+    ViewData["Title"] = "Theo Dõi Hàng Thất Thoát";
+}
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="text-danger fw-bold"><i class="bi bi-exclamation-octagon me-2"></i>Danh Sách Hàng Thất Thoát / Hao Hụt</h2>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light small text-uppercase">
+                    <tr>
+                        <th class="ps-4" width="8%">ID</th>
+                        <th>Mã Vận Chuyển</th>
+                        <th>Mã SKU</th>
+                        <th>Tên Sản Phẩm Gặp Sự Cố</th>
+                        <th class="text-center text-danger">Số Lượng Lệch</th>
+                        <th>Lý Do Hệ Thống Ghi Nhận</th>
+                        <th class="text-center pe-4">Trạng Thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="7" class="text-center text-success py-5"><i class="bi bi-check-circle-fill fs-2 d-block mb-2"></i>Tuyệt vời! Không có hàng hóa nào bị hao hụt trong hệ thống.</td></tr>
+                    }
+                    else
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-4 text-muted">#@item.Id</td>
+                                <td class="fw-bold text-primary">@item.TransferCode</td>
+                                <td><code>@item.SKU</code></td>
+                                <td class="fw-bold text-dark">@item.ProductName</td>
+                                <td class="text-center fs-5 fw-bold text-danger">@item.LossQty</td>
+                                <td class="small text-secondary">@item.Reason</td>
+                                <td class="text-center pe-4">
+                                    <span class="badge @(item.ResolvedStatus ? "bg-success" : "bg-warning text-dark")">
+                                        @item.ResolvedStatusText
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

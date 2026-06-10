@@ -1,0 +1,79 @@
+﻿@model IEnumerable<DoAnCoSo.Models.ViewModels.DailyLedgerVM>
+@{
+    ViewData["Title"] = "Báo Cáo Sổ Cái Kho Hàng";
+}
+
+<div class="container-fluid mt-4">
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body p-4">
+            <h4 class="text-primary fw-bold mb-3"><i class="bi bi-journal-text me-2"></i>Sổ Cái Biến Động Kho Hàng</h4>
+
+            <form method="get" asp-action="DailyLedger" class="row g-3 align-items-end">
+                <div class="col-12 col-md-3">
+                    <label class="form-label small fw-bold text-secondary">Từ ngày</label>
+                    <input type="date" name="fromDate" class="form-control" value="@ViewBag.FromDate" />
+                </div>
+                <div class="col-12 col-md-3">
+                    <label class="form-label small fw-bold text-secondary">Đến ngày</label>
+                    <input type="date" name="toDate" class="form-control" value="@ViewBag.ToDate" />
+                </div>
+                <div class="col-12 col-md-2">
+                    <button type="submit" class="btn btn-primary w-100 fw-bold"><i class="bi bi-filter me-1"></i>Lọc Số Liệu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle mb-0">
+                <thead class="table-dark small text-uppercase">
+                    <tr>
+                        <th class="ps-4">Thời Gian</th>
+                        <th>Kho Hàng</th>
+                        <th>Mã SKU</th>
+                        <th>Tên Sản Phẩm</th>
+                        <th class="text-center">Loại Giao Dịch</th>
+                        <th>Mã Chứng Từ</th>
+                        <th class="text-center">Biến Động</th>
+                        <th class="text-center text-muted">Trước</th>
+                        <th class="text-center text-success">Sau</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="9" class="text-center text-muted py-4">Không tìm thấy dữ liệu biến động nào trong khoảng thời gian đã chọn.</td></tr>
+                    }
+                    else
+                    {
+                        foreach (var item in Model)
+                        {
+                            string badgeClass = item.TransactionType switch
+                            {
+                                "INBOUND" => "bg-success",
+                                "OUTBOUND" => "bg-danger",
+                                "TRANSFER_OUT" => "bg-warning text-dark",
+                                "TRANSFER_IN" => "bg-info text-dark",
+                                _ => "bg-secondary"
+                            };
+                            <tr>
+                                <td class="ps-4 small text-muted">@item.TransactionDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td class="fw-bold">@item.WarehouseName</td>
+                                <td><code>@item.SKU</code></td>
+                                <td class="small fw-bold text-dark">@item.ProductName</td>
+                                <td class="text-center"><span class="badge @badgeClass">@item.TransactionType</span></td>
+                                <td><span class="text-primary fw-bold">@item.ReferenceCode</span></td>
+                                <td class="text-center fs-6 fw-bold @(item.TransactionType.Contains("IN") ? "text-success" : "text-danger")">
+                                    @(item.TransactionType.Contains("IN") ? "+" : "-")@item.QuantityChanged
+                                </td>
+                                <td class="text-center text-muted">@item.BeforeQuantity</td>
+                                <td class="text-center fw-bold text-dark">@item.AfterQuantity</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
